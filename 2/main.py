@@ -1,18 +1,13 @@
 import math,time,os,sys,threading
 # 是否是质数
-def is_prime(n):
-    if n < 2 :
-        return False
-    if n == 2 :
+def is_prime(x):
+    if (x == 2) or (x == 3):
         return True
-    if n % 2 == 0:
+    if (x % 6 != 1) and (x % 6 != 5):
         return False
-    div = 3
-    while div * div <= n:
-        if n % div == 0:
+    for i in range(5, int(x ** 0.5) + 1, 6):
+        if (x % i == 0) or (x % (i + 2) == 0):
             return False
-        else:
-            div += 2
     return True
 # 线程函数
 def main(n,id,end):
@@ -30,7 +25,7 @@ def main(n,id,end):
             j += 2
         if j > even_num//2 :
             print(even_num, "：没找到'1+1'结构，你推翻了哥德巴赫猜想！！！")
-            break
+            sys.exit()
         l = len(str(even_num))-1
         p = (even_num-(n*2+6))/((end)*2+6)
         strp = str(math.floor(p*10000)/100)
@@ -68,8 +63,9 @@ elif sys.platform == "linux":
     os.system("clear")
 # 初始化
 threads,datas = [],[]
-tr = 15
-vvv = 300000
+print("多线程验证哥德巴赫猜想")
+tr = int(input("线程数（建议15）："))
+vvv = int(input("每线程验证范围（300000≈20分钟）："))
 o = 0
 # 读取i
 with open("i.txt","r") as f:
@@ -84,7 +80,8 @@ j = 0
 for i in threads:
     i.start()
     j += 1
-    print(f'\r启动线程#{str(j).zfill(3)} \033[32m{math.floor(j*80/tr)*"━"}\033[0m\033[31m{math.floor(80-j*80/tr)*"━"}\033[0m',end='')
+    length = os.get_terminal_size().columns-15
+    print(f'\r启动线程#{str(j).zfill(3)} \033[32m{math.floor(j*length/tr)*"━"}\033[0m\033[31m{math.floor(length-j*length/tr)*"━"}\033[0m',end='')
 # 展示信息直到验证完毕
 while o<tr:
     if sys.platform == "win32":
@@ -93,6 +90,7 @@ while o<tr:
         os.system("clear")
     pp = 0
     for i in datas:
+        length = os.get_terminal_size().columns-50
         id = i["id"]
         l = i["l"]
         strp = i["strp"]
@@ -103,23 +101,23 @@ while o<tr:
         sec = i["sec"]
         n = i["n"]
         end = i["end"]
-        length = 100
         pp += p
         if i["run"]:
             print(
                 f'#{id} {n*2+6}~{(n+end)*2+6} {add_zero(strp)}% ',
-                f'预计剩余{(d+"天" if int(d)>0 else "")+(hr+"时" if int(hr)>0 else "")+(min+"分" if int(min)>0 else "")+sec}秒'
+                f'预计剩余{(d+"天" if int(d)>0 else "")+(hr+"时" if int(hr)>0 else "")+(min+"分" if int(min)>0 else "")+sec}秒 '
                 f'\033[32m{math.floor(p*length)*"━"}\033[0m\033[31m{(length-math.floor(p*length))*"━"}\033[0m',
                 end='\n'
             )
         else:
-            with open('iplus', 'w') as file:
+            with open('i.txt', 'w') as file:
                 file.write(str(n+end))
-            print(f'#{id} {n*2+6} => {(n+end)*2+6} 验证完毕')
-    print(f'总进度 {add_zero(math.floor(pp*8000/tr)/100)}% \033[32m{math.floor(pp*length/tr)*"━"}\033[0m\033[31m{math.floor(length-pp*length/tr)*"━"}\033[0m')
+            print(f'#{id} {n*2+6}~{(n+end)*2+6} 100%')
+    length = os.get_terminal_size().columns-20
+    print(f'总进度 {add_zero(math.floor(pp*length*100/(tr*vvv))/100)}% \033[32m{math.floor(pp*length/(tr*vvv))*"━"}\033[0m\033[31m{math.floor(length-pp*length/(tr*vvv))*"━"}\033[0m')
     time.sleep(3)
 # 保存i
 with open('i.txt', 'w') as file:
     file.write(str((tr-1)*vvv+f))
 # 输出信息
-print(f"\a{f*2+6} => {((tr-1)*vvv+f)*2+6} 验证完毕")
+print(f"\a{f*2+6}~{((tr-1)*vvv+f)*2+6} 验证完毕")
